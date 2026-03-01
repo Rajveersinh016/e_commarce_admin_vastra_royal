@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "651472370653",
+    "project_id": "e-commarce-vastra-royal",
+    "storage_bucket": "e-commarce-vastra-royal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651472370653:android:56c00118407b9801669434",
+        "android_client_info": {
+          "package_name": "com.example.e_commarce_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZB7WMKh_BjNojZxpt8PR3xUwuMLFEhNA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
