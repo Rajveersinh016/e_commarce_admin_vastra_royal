@@ -1,4 +1,9 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+
+import 'order_details/order_details.dart';
 
 class Orders extends StatefulWidget {
   const Orders({super.key});
@@ -135,7 +140,12 @@ class _OrdersState extends State<Orders> {
                     fontWeight: FontWeight.bold,
                     fontSize: 16),
               ),
-              TextButton( onPressed: (){},
+              TextButton( onPressed: (){
+
+                //Get.to(OrderDetails());
+                Get.to(() => OrderDetails(orderId: id,));
+
+              },
                 child: Text(
 
                 "View Details >",
@@ -150,6 +160,8 @@ class _OrdersState extends State<Orders> {
       ),
     );
   }
+
+  final DatabaseReference ordersRef = FirebaseDatabase.instance.ref().child("orders");
 
   @override
   Widget build(BuildContext context) {
@@ -180,75 +192,101 @@ class _OrdersState extends State<Orders> {
             SizedBox(height: 16),
 
 
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    margin:
-                    EdgeInsets.only(left: 16, right: 8),
-                    padding:EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                      BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.grey.shade300,
+            StreamBuilder(
+              stream: ordersRef.onValue,
+              builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+
+                if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                  return SizedBox();
+                }
+
+                Map orders = snapshot.data!.snapshot.value as Map;
+
+                int todayOrders = 0;
+                int pendingOrders = 0;
+
+                DateTime now = DateTime.now();
+
+                orders.forEach((key, value) {
+
+                  // Count Pending Orders
+                  if (value["status"] == "placed") {
+                    pendingOrders++;
+                  }
+
+                  // Count Today's Orders
+                  int time = value["orderTime"];
+                  DateTime orderDate =
+                  DateTime.fromMillisecondsSinceEpoch(time);
+
+                  if (orderDate.year == now.year &&
+                      orderDate.month == now.month &&
+                      orderDate.day == now.day) {
+                    todayOrders++;
+                  }
+
+                });
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.only(left: 16, right: 8),
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("TODAY'S ORDERS",
+                                style: TextStyle(color: Colors.grey)),
+                            SizedBox(height: 6),
+                            Text(
+                              todayOrders.toString(),
+                              style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text("Realtime",
+                                style: TextStyle(color: Colors.green)),
+                          ],
+                        ),
                       ),
                     ),
-                    child:Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                        Text("TODAY'S ORDERS",
-                            style:
-                            TextStyle(color: Colors.grey)),
-                        SizedBox(height: 6),
-                        Text("128",
-                            style: TextStyle(
-                                fontSize: 22,
-                                fontWeight:
-                                FontWeight.bold)),
-                        Text("+12%",
-                            style:
-                            TextStyle(color: Colors.green)),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    margin:
-                    EdgeInsets.only(right: 16, left: 8),
-                    padding:EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius:
-                      BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.grey.shade300,
+
+                    Expanded(
+                      child: Container(
+                        margin: EdgeInsets.only(right: 16, left: 8),
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("PENDING",
+                                style: TextStyle(color: Colors.grey)),
+                            SizedBox(height: 6),
+                            Text(
+                              pendingOrders.toString(),
+                              style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text("Active",
+                                style: TextStyle(color: Colors.blue)),
+                          ],
+                        ),
                       ),
                     ),
-                    child:Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-                      children: [
-                        Text("PENDING",
-                            style:
-                            TextStyle(color: Colors.grey)),
-                        SizedBox(height: 6),
-                        Text("42",
-                            style: TextStyle(
-                                fontSize: 22,
-                                fontWeight:
-                                FontWeight.bold)),
-                        Text("Active",
-                            style:
-                            TextStyle(color: Colors.blue)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
 
             SizedBox(height: 16),
@@ -271,31 +309,47 @@ class _OrdersState extends State<Orders> {
             SizedBox(height: 16),
 
 
-            _buildOrderCard(
-              id: "#VR-8829",
-              name: "Arjun Mehta",
-              date: "Oct 24, 2023 • 2 items",
-              price: "₹4,500.00",
-              status: "SHIPPED",
-              statusColor: Colors.blue,
-            ),
+            StreamBuilder(
+              stream: ordersRef.onValue,
+              builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
 
-            _buildOrderCard(
-              id: "#VR-8828",
-              name: "Priya Singh",
-              date: "Oct 23, 2023 • 1 item",
-              price: "₹2,100.00",
-              status: "PENDING",
-              statusColor: Colors.orange,
-            ),
+                if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                  return Center(child: Text("No Orders"));
+                }
 
-            _buildOrderCard(
-              id: "#VR-8827",
-              name: "Vikram Malhotra",
-              date: "Oct 22, 2023 • 4 items",
-              price: "₹12,850.00",
-              status: "DELIVERED",
-              statusColor: Colors.green,
+                Map orders = snapshot.data!.snapshot.value as Map;
+
+                List orderList = orders.values.toList();
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: orderList.length,
+                  itemBuilder: (context, index) {
+
+                    final order = orderList[index];
+
+                    int itemCount = order["products"] != null
+                        ? order["products"].length
+                        : 0;
+
+                    return _buildOrderCard(
+                      id: order["orderId"],
+                      name: order["address"]?["name"] ?? "Customer",
+                      date: "$itemCount items",
+                      price: "₹${order["totalAmount"]}",
+                      status: order["status"].toUpperCase(),
+                      statusColor: order["status"] == "placed"
+                          ? Colors.orange
+                          : order["status"] == "packed"
+                          ? Colors.blue
+                          : order["status"] == "delivered"
+                          ? Colors.green
+                          : Colors.grey,
+                    );
+                  },
+                );
+              },
             ),
 
             SizedBox(height: 30),
