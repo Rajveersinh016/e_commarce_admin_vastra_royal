@@ -4,12 +4,18 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../order_confirmed/order_confirmed.dart';
+
 class OrderDetails extends StatefulWidget {
 
-
   final String orderId;
+  final String status;
 
-  const OrderDetails({super.key, required this.orderId});
+  const OrderDetails({
+    super.key,
+    required this.orderId,
+    required this.status,
+  });
 
   @override
   State<OrderDetails> createState() => _OrderDetailsState();
@@ -293,63 +299,100 @@ class _OrderDetailsState extends State<OrderDetails> {
 
               Container(
                 padding: const EdgeInsets.all(16),
-
                 child: Column(
                   children: [
 
-                    SizedBox(
-                      height:50,
-                      width: 350,
-                      child: ElevatedButton.icon(
+                    // ⭐ SHOW ONLY IF ORDER IS NEW
+                    if(order["status"] == "placed")
+                      SizedBox(
+                        height: 50,
+                        width: 350,
+                        child: ElevatedButton.icon(
 
-                        onPressed: () {
+                          onPressed: () {
 
+                            Get.to(
+                              MarkAsPackedScreen(orderId: widget.orderId),
+                            );
 
-                          Get.to(MarkAsPackedScreen(orderId: widget.orderId));
-                          //Get.to(MarkAsPackedScreen());
+                          },
 
-                        },
-                        style: ElevatedButton.styleFrom(
-                         backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+
+                          icon: const Icon(Icons.inventory_2,color: Colors.white),
+                          label: const Text(
+                            "Mark as Packed",
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-
-                        icon: const Icon(Icons.inventory_2,color: Colors.white,),
-                        label: const Text("Mark as Packed",style: TextStyle(color: Colors.white),),
                       ),
-                    ),
 
                     const SizedBox(height: 10),
 
-                    SizedBox(
-                      height: 50,
-                      width: 350,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
+                    // ⭐ CANCEL ONLY WHEN ORDER IS NEW
+                    if(order["status"] == "placed")
+                      SizedBox(
+                        height: 50,
+                        width: 350,
+                        child: ElevatedButton.icon(
 
+                          onPressed: () {
 
-                          //Get.to(CancelOrder(orderId: widget.orderId));
-                          Get.to(CancelOrder());
+                            Get.to(CancelOrder(orderId: widget.orderId));
 
+                          },
 
-                        },
-                        // style: OutlinedButton.styleFrom(
-                        //
-                        // ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.redAccent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
 
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.redAccent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          icon: const Icon(Icons.cancel,color: Colors.white),
+                          label: const Text(
+                            "Cancel Order",
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-
-                        icon: const Icon(Icons.cancel,color: Colors.white,),
-                        label: const Text("Cancel Order",style: TextStyle(color: Colors.white)),
                       ),
-                    )
+
+                    // ⭐ DOWNLOAD LABEL ONLY WHEN PACKED
+                    if(order["status"] == "packed")
+                      SizedBox(
+                        height: 50,
+                        width: 350,
+                        child: ElevatedButton.icon(
+
+                          onPressed: () {
+
+                            // go to label screen
+                            Get.to(
+                              OrderConfirmed(orderId: widget.orderId),
+                            );
+
+                          },
+
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+
+                          icon: const Icon(Icons.local_shipping,color: Colors.white),
+                          label: const Text(
+                            "Download Shipping Label",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+
                   ],
                 ),
               )

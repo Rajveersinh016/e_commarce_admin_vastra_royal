@@ -13,7 +13,6 @@ import 'package:pdf/widgets.dart' as pw;
 
 class OrderConfirmed extends StatefulWidget {
 
-  // ⭐ CHANGE: receive orderId from previous screen
   final String orderId;
 
   const OrderConfirmed({super.key, required this.orderId});
@@ -29,7 +28,7 @@ class _OrderConfirmedState extends State<OrderConfirmed>
   late Animation<double> _scaleAnim;
   late Animation<double> _fadeAnim;
 
-  // ⭐ CHANGE: Firebase reference
+
   final DatabaseReference orderRef =
       FirebaseDatabase.instance.ref().child("orders");
 
@@ -59,7 +58,7 @@ class _OrderConfirmedState extends State<OrderConfirmed>
 
 
 
-  // ⭐ CHANGE: function to generate shipping label PDF
+
   Future<void> generateShippingLabel(Map order) async {
 
     final font = await rootBundle.load("lib/assets/fonts/Roboto-Regular.ttf");
@@ -92,7 +91,7 @@ class _OrderConfirmedState extends State<OrderConfirmed>
 
                 pw.SizedBox(height: 20),
 
-                // ⭐ CHANGE: barcode in label
+
                 pw.BarcodeWidget(
                   barcode: pw.Barcode.code128(),
                   data: order["orderId"],
@@ -106,10 +105,9 @@ class _OrderConfirmedState extends State<OrderConfirmed>
       ),
     );
 
-    // ⭐ CHANGE: download file to device
+
     final bytes = await pdf.save();
 
-// ⭐ safer download directory
     Directory directory = Directory("/storage/emulated/0/Download");
 
     if (!directory.existsSync()) {
@@ -117,12 +115,11 @@ class _OrderConfirmedState extends State<OrderConfirmed>
     }
 
     final file = File(
-      "${directory.path}/shipping_label_${order["orderId"]}.pdf",
+      "${directory.path}/shipping_label_${order["orderId"]}_${DateTime.now().millisecondsSinceEpoch}.pdf",
     );
 
     await file.writeAsBytes(bytes);
 
-// ⭐ debug print
     print("PDF saved at: ${file.path}");
 
     Get.snackbar("Success", "Shipping label downloaded");
@@ -133,7 +130,7 @@ class _OrderConfirmedState extends State<OrderConfirmed>
   @override
   Widget build(BuildContext context) {
 
-    // ⭐ CHANGE: StreamBuilder to load order data dynamically
+
     return StreamBuilder(
       stream: orderRef.child(widget.orderId).onValue,
 
@@ -147,7 +144,7 @@ class _OrderConfirmedState extends State<OrderConfirmed>
           );
         }
 
-        // ⭐ CHANGE: Firebase order data
+
         Map order = snapshot.data!.snapshot.value as Map;
         Map address = order["address"] ?? {};
         List products = order["products"] ?? [];
@@ -235,9 +232,7 @@ class _OrderConfirmedState extends State<OrderConfirmed>
                         const SizedBox(height: 28),
 
 
-                        // ============================
-                        // ORDER SUMMARY CARD
-                        // ============================
+
 
                         Container(
                           width: double.infinity,
@@ -361,21 +356,30 @@ class _OrderConfirmedState extends State<OrderConfirmed>
                       child: ElevatedButton.icon(
                         onPressed: () async {
 
+                          //  STEP 1: update order status to shipped
+                          await orderRef.child(widget.orderId).update({
+                            "status": "shipped"
+                          });
+
+                          //  STEP 2: get updated order data
                           DatabaseEvent event =
-                          await orderRef
-                              .child(widget.orderId)
-                              .once();
+                          await orderRef.child(widget.orderId).once();
 
-                          Map order =
-                          event.snapshot.value as Map;
+                          Map order = event.snapshot.value as Map;
 
+                          //  STEP 3: generate shipping label
                           await generateShippingLabel(order);
+
+                          Get.snackbar(
+                            "Success",
+                            "Order marked as shipped & label downloaded",
+                          );
                         },
 
-                        icon: const Icon(Icons.print),
+                        icon: const Icon(Icons.print,color: Colors.white,),
 
                         label:
-                        const Text("Print Shipping Label"),
+                        const Text("Print Shipping Label",style: TextStyle(color: Colors.white),),
 
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
@@ -383,6 +387,7 @@ class _OrderConfirmedState extends State<OrderConfirmed>
                         ),
                       ),
                     ),
+
 
                     const SizedBox(height: 10),
 
@@ -395,9 +400,9 @@ class _OrderConfirmedState extends State<OrderConfirmed>
                           Get.offAll(() => const Orders());
                         },
 
-                        icon: const Icon(Icons.list_alt),
+                        icon: const Icon(Icons.list_alt,color: Colors.white,),
 
-                        label: const Text("Back to Orders"),
+                        label: const Text("Back to Orders",style: TextStyle(color: Colors.white),),
 
                         style: ElevatedButton.styleFrom(
                           backgroundColor:

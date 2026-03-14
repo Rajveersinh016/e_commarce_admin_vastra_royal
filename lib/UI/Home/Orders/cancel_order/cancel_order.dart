@@ -1,7 +1,14 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class CancelOrder extends StatefulWidget {
-  const CancelOrder({super.key});
+
+  final String orderId;
+
+  const CancelOrder({
+    super.key,
+    required this.orderId,
+  });
 
   @override
   State<CancelOrder> createState() => _CancelOrderState();
@@ -23,6 +30,9 @@ class _CancelOrderState extends State<CancelOrder> {
     _otherReasonController.dispose();
     super.dispose();
   }
+
+  final DatabaseReference ordersRef =
+  FirebaseDatabase.instance.ref().child("orders");
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +138,28 @@ class _CancelOrderState extends State<CancelOrder> {
                       width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () async {
+
+                          String reason = _selectedReason ?? "";
+
+                          if (_otherReasonController.text.isNotEmpty) {
+                            reason = _otherReasonController.text;
+                          }
+
+                          await ordersRef.child(widget.orderId).update({
+
+                            "status": "cancelled",
+
+                            "cancelDetails": {
+                              "reason": reason,
+                              "time": DateTime.now().millisecondsSinceEpoch
+                            }
+
+                          });
+
+                          Navigator.pop(context);
+
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF5B6EE8),
                           shape: RoundedRectangleBorder(

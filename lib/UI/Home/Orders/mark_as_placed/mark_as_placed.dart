@@ -278,9 +278,7 @@ class _MarkAsPackedScreenState extends State<MarkAsPackedScreen> {
                           double weight =
                               double.tryParse(_weightController.text) ?? 0;
 
-                          await databaseReference
-                              .child(widget.orderId)
-                              .update({
+                          await databaseReference.child(widget.orderId).update({
 
                             "status": "packed",
 
@@ -288,6 +286,7 @@ class _MarkAsPackedScreenState extends State<MarkAsPackedScreen> {
                               "boxes": boxes,
                               "weight": weight
                             }
+
                           });
 
                           //Get.to(() => const OrderConfirmed());
