@@ -290,7 +290,8 @@ class _MarkAsPackedScreenState extends State<MarkAsPackedScreen> {
                           });
 
                           //Get.to(() => const OrderConfirmed());
-                          Get.to(() => OrderConfirmed(orderId: widget.orderId,));
+                          //Get.to(() => OrderConfirmed(orderId: widget.orderId,));
+                          Get.to(() => OrderConfirmed(orderId: widget.orderId));
                         },
 
                         icon: const Icon(Icons.local_shipping,

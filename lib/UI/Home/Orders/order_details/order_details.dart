@@ -4,7 +4,11 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../Services/shiprocket_service.dart';
 import '../order_confirmed/order_confirmed.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class OrderDetails extends StatefulWidget {
 
@@ -26,6 +30,131 @@ class _OrderDetailsState extends State<OrderDetails> {
 
   final DatabaseReference ordersRef =
   FirebaseDatabase.instance.ref().child("orders");
+
+  ShiprocketService shiprocket = ShiprocketService();
+
+
+  Future<bool> createShipment(Map order) async {
+
+    if (order["shipment_id"] != null) {
+      print("Shipment already exists");
+      return true; // already created
+    }
+
+    try {
+
+      String? token = await shiprocket.getToken();
+
+      if (token == null) return false;
+
+      Map address = order["address"] ?? {};
+      List products = order["products"] ?? [];
+
+      if (products.isEmpty) return false;
+
+      var product = products[0];
+
+      String rawPhone = address["phone"]?.toString() ?? "";
+
+      String phone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+
+      if (phone.startsWith("91") && phone.length > 10) {
+        phone = phone.substring(phone.length - 10);
+      }
+
+      if (phone.length != 10) {
+        Get.snackbar("Error", "Invalid phone number");
+        return false;
+      }
+
+      final body = {
+        "order_id": widget.orderId,
+        "order_date": DateTime.now().toString().split(" ")[0],
+        "pickup_location": "work",
+        "shipping_is_billing": true,
+
+        "billing_customer_name": address["name"] ?? "Customer",
+        "billing_last_name": "User",
+        "billing_address": "${address["line1"] ?? ""} ${address["line2"] ?? ""}".trim(),
+        "billing_city": address["city"] ?? "Ahmedabad",
+        "billing_pincode": address["zipcode"]?.toString() ?? "380001",
+        "billing_state": address["state"] ?? "Gujarat",
+        "billing_country": "India",
+        "billing_email": order["userEmail"] ?? "test@gmail.com",
+        "billing_phone": phone,
+
+        "shipping_customer_name": address["name"] ?? "Customer",
+        "shipping_last_name": "User",
+        "shipping_address": "${address["line1"] ?? ""} ${address["line2"] ?? ""}".trim(),
+        "shipping_city": address["city"] ?? "Ahmedabad",
+        "shipping_pincode": address["zipcode"]?.toString() ?? "380001",
+        "shipping_state": address["state"] ?? "Gujarat",
+        "shipping_country": "India",
+        "shipping_email": order["userEmail"] ?? "test@gmail.com",
+        "shipping_phone": phone,
+
+        "order_items": [
+          {
+            "name": product["name"],
+            "sku": product["name"],
+            "units": product["quantity"],
+            "selling_price": product["price"]
+          }
+        ],
+
+        "payment_method": "Prepaid",
+        "sub_total": order["totalAmount"],
+
+        "length": 10,
+        "breadth": 10,
+        "height": 2,
+        "weight": 0.5
+      };
+
+      final response = await http.post(
+        Uri.parse("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: jsonEncode(body),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (data["shipment_id"] != null) {
+
+        print("✅ SHIPMENT CREATED");
+
+        await ordersRef.child(widget.orderId).update({
+          "shipment_id": data["shipment_id"],
+          "shiprocket_order_id": data["order_id"],
+          "awb_code": "TEST123456", // fake tracking
+          "status": "packed"
+        });
+
+        Get.to(() => MarkAsPackedScreen(orderId: widget.orderId));
+
+      } else {
+
+        print("❌ SHIPMENT FAILED");
+
+        Get.snackbar(
+          "Error",
+          data["message"] ?? "Shipment failed",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        //return false;
+      }
+      return false;
+
+
+    } catch (e) {
+      print("ERROR: $e");
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,11 +438,19 @@ class _OrderDetailsState extends State<OrderDetails> {
                         width: 350,
                         child: ElevatedButton.icon(
 
-                          onPressed: () {
+                          onPressed: () async {
 
-                            Get.to(
-                              MarkAsPackedScreen(orderId: widget.orderId),
-                            );
+                            //await createShipment(order);
+                            //await createShipment(order);
+                            bool success = await createShipment(order);
+                            if(success){
+                              Get.to(() => MarkAsPackedScreen(orderId: widget.orderId,));
+                            }
+
+
+                            // Get.to(
+                            //   MarkAsPackedScreen(orderId: widget.orderId),
+                            // );
 
                           },
 
@@ -369,7 +506,9 @@ class _OrderDetailsState extends State<OrderDetails> {
                         width: 350,
                         child: ElevatedButton.icon(
 
-                          onPressed: () {
+                          onPressed: () async {
+
+                            //await createShipment(order);
 
                             // go to label screen
                             Get.to(
