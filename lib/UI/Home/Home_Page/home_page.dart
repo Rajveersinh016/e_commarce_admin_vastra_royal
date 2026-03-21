@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../Controller/admin_dashboard_controller.dart';
 
@@ -13,249 +14,273 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  final adminDashboardController = Get.put(AdminDashboardController());
+  final controller = Get.put(AdminDashboardController());
+
+  final Color primaryColor = const Color(0xFF6C63FF);
+  final Color bgColor = const Color(0xFFF5F6FA);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.orange, width: 2),
-              ),
-              child: CircleAvatar(
-                radius: 20,
-                backgroundImage: AssetImage("lib/assets/images/profile.png"),
-              ),
-            ),
-            SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Hello, Admin!",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                Text("Welcome back to your shop",
-                    style: TextStyle(color: Colors.grey, fontSize: 12)),
-              ],
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: bgColor,
 
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
 
-            SizedBox(height: 20),
-
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Good morning, James",
-                      style: TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text("Here's what's happening with Vastra Royale today.",
-                      style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 16),
-
-
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 16),
-              padding: EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Total Revenue",
-                          style: TextStyle(color: Colors.grey)),
-                      Icon(Icons.payments, color: Colors.amber),
-                    ],
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Obx(() => Text(
-                        "₹${adminDashboardController.totalRevenue.value.toStringAsFixed(0)}",
-                        style: TextStyle(
-                            fontSize: 28, fontWeight: FontWeight.bold),
-                      )),
-                      SizedBox(width: 10),
-                      Text("+12%", style: TextStyle(color: Colors.green)),
-                    ],
-                  ),
-                  SizedBox(height: 4),
-                  Text("vs. last month",
-                      style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 16),
-
-
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(left: 16, right: 8),
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18)),
-                    child: Column(
+              /// 🔥 HEADER
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 22,
+                      backgroundImage:
+                      AssetImage("lib/assets/images/profile.png"),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("TOTAL ORDERS",
-                            style: TextStyle(color: Colors.grey)),
-                        SizedBox(height: 6),
-                        Obx(() => Text(
-                          adminDashboardController.totalOrders.value.toString(),
-                          style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold),
-                        )),
+                        Text("Hello, Admin 👋",
+                            style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold)),
+                        Text("Welcome back",
+                            style: GoogleFonts.poppins(
+                                color: Colors.grey, fontSize: 12)),
                       ],
-                    ),
+                    )
+                  ],
+                ),
+              ),
+
+              /// TITLE
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Dashboard",
+                    style: GoogleFonts.poppins(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
+              ),
 
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(right: 16, left: 8),
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
+              const SizedBox(height: 16),
+
+              /// 🔥 REVENUE CARD (FIXED SIZE)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6C63FF), Color(0xFF5A54E8)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    Text("Total Revenue",
+                        style: GoogleFonts.poppins(
+                            color: Colors.white70)),
+
+                    const SizedBox(height: 10),
+
+                    Obx(() => Text(
+                      "₹${controller.totalRevenue.value.toStringAsFixed(0)}",
+                      style: GoogleFonts.poppins(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(18)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("NEW CUSTOMERS",
-                            style: TextStyle(color: Colors.grey)),
-                        SizedBox(height: 6),
-                        Obx(() => Text(
-                          adminDashboardController.totalUsers.value.toString(),
-                          style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold),
-                        )),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(height: 20),
-
-
-            Container(
-              margin: EdgeInsets.symmetric(horizontal: 16),
-              padding: EdgeInsets.all(18),
-              height: 250,
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Sales Trends",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
-                  SizedBox(height: 4),
-                  Text("Last 7 Days",
-                      style: TextStyle(color: Colors.grey)),
-                  SizedBox(height: 20),
-
-                Expanded(
-                  child: Obx(() => BarChart(
-                    BarChartData(
-                      borderData: FlBorderData(show: false),
-                      gridData: FlGridData(show: false),
-
-
-                      titlesData: FlTitlesData(
-                        bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: true,
-                            getTitlesWidget: (value, meta) {
-                              List days = ["M", "T", "W", "T", "F", "S", "S"];
-                              return Padding(
-                                padding: EdgeInsets.only(top: 6),
-                                child: Text(
-                                  days[value.toInt()],
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        leftTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        topTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
-                        rightTitles: AxisTitles(
-                          sideTitles: SideTitles(showTitles: false),
-                        ),
                       ),
+                    )),
 
+                    const SizedBox(height: 6),
 
-                      barGroups: List.generate(
-                        adminDashboardController.weeklySales.length,
-                            (index) {
-                          return BarChartGroupData(
-                            x: index,
-                            barRods: [
-                              BarChartRodData(
-                                toY: adminDashboardController.weeklySales[index],
-                                width: 12,
-                                borderRadius: BorderRadius.circular(6),
+                    Text("Updated just now",
+                        style: GoogleFonts.poppins(
+                            color: Colors.white70)),
+                  ],
+                ),
+              ),
 
+              const SizedBox(height: 16),
 
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.orange,
-                                    Colors.deepOrange,
-                                  ],
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
+              /// 🔥 STATS
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _statCard(
+                          "Orders", controller.totalOrders),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _statCard(
+                          "Customers", controller.totalUsers),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// 🔥 CHART (FIXED)
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.all(18),
+                height: 260,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    Text("Sales Overview",
+                        style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold)),
+
+                    Text("Last 7 Days",
+                        style: GoogleFonts.poppins(
+                            color: Colors.grey, fontSize: 12)),
+
+                    const SizedBox(height: 20),
+
+                    Expanded(
+                      child: Obx(() {
+
+                        List<double> data = List.filled(7, 0);
+
+                        for (int i = 0;
+                        i < controller.weeklySales.length &&
+                            i < 7;
+                        i++) {
+                          data[i] = controller.weeklySales[i];
+                        }
+
+                        return BarChart(
+                          BarChartData(
+                            borderData: FlBorderData(show: false),
+                            gridData: FlGridData(show: false),
+
+                            titlesData: FlTitlesData(
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget:
+                                      (value, meta) {
+                                    const days = [
+                                      "M",
+                                      "T",
+                                      "W",
+                                      "T",
+                                      "F",
+                                      "S",
+                                      "S"
+                                    ];
+                                    return Padding(
+                                      padding:
+                                      const EdgeInsets.only(
+                                          top: 6),
+                                      child: Text(
+                                        days[value.toInt()],
+                                        style: const TextStyle(
+                                            fontSize: 10),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  )),
-                )
-                ],
-              ),
-            ),
+                              leftTitles: AxisTitles(
+                                  sideTitles:
+                                  SideTitles(showTitles: false)),
+                              rightTitles: AxisTitles(
+                                  sideTitles:
+                                  SideTitles(showTitles: false)),
+                              topTitles: AxisTitles(
+                                  sideTitles:
+                                  SideTitles(showTitles: false)),
+                            ),
 
-            SizedBox(height: 30),
-          ],
+                            barGroups: List.generate(7, (index) {
+                              double value = data[index];
+
+                              return BarChartGroupData(
+                                x: index,
+                                barRods: [
+                                  BarChartRodData(
+                                    toY: value < 50
+                                        ? (value == 0 ? 0 : 50)
+                                        : value,
+                                    width: 14,
+                                    borderRadius:
+                                    BorderRadius.circular(6),
+                                    color: primaryColor,
+                                  ),
+                                ],
+                              );
+                            }),
+                          ),
+                          swapAnimationDuration:
+                          const Duration(milliseconds: 300),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  /// 🔥 STAT CARD
+  Widget _statCard(String title, RxInt value) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: GoogleFonts.poppins(
+                  color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 6),
+          Obx(() => Text(
+            value.value.toString(),
+            style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold),
+          )),
+        ],
       ),
     );
   }

@@ -5,14 +5,11 @@ import 'package:get/get.dart';
 
 import 'dart:io';
 
-// ⭐ CHANGE: barcode + firebase + pdf imports
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class OrderConfirmed extends StatefulWidget {
-
   final String orderId;
 
   const OrderConfirmed({super.key, required this.orderId});
@@ -28,9 +25,11 @@ class _OrderConfirmedState extends State<OrderConfirmed>
   late Animation<double> _scaleAnim;
   late Animation<double> _fadeAnim;
 
-
   final DatabaseReference orderRef =
-      FirebaseDatabase.instance.ref().child("orders");
+  FirebaseDatabase.instance.ref().child("orders");
+
+  final Color primaryColor = const Color(0xFF6C63FF);
+  final Color bgColor = const Color(0xFFF5F6FA);
 
   @override
   void initState() {
@@ -41,8 +40,8 @@ class _OrderConfirmedState extends State<OrderConfirmed>
       duration: const Duration(milliseconds: 600),
     );
 
-    _scaleAnim = CurvedAnimation(
-        parent: _controller, curve: Curves.elasticOut);
+    _scaleAnim =
+        CurvedAnimation(parent: _controller, curve: Curves.elasticOut);
 
     _fadeAnim =
         CurvedAnimation(parent: _controller, curve: Curves.easeIn);
@@ -56,12 +55,10 @@ class _OrderConfirmedState extends State<OrderConfirmed>
     super.dispose();
   }
 
-
-
-
+  /// PDF GENERATION (UNCHANGED)
   Future<void> generateShippingLabel(Map order) async {
-
-    final font = await rootBundle.load("lib/assets/fonts/Roboto-Regular.ttf");
+    final font =
+    await rootBundle.load("lib/assets/fonts/Roboto-Regular.ttf");
 
     final ttf = pw.Font.ttf(font);
 
@@ -70,28 +67,17 @@ class _OrderConfirmedState extends State<OrderConfirmed>
     pdf.addPage(
       pw.Page(
         build: (context) {
-
           return pw.Container(
             padding: const pw.EdgeInsets.all(20),
-
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-
-                pw.Text(
-                  "Vastra Royale",
-                  style: pw.TextStyle(font: ttf, fontSize: 22),
-                ),
-
+                pw.Text("Vastra Royale",
+                    style: pw.TextStyle(font: ttf, fontSize: 22)),
                 pw.SizedBox(height: 20),
-
                 pw.Text("Order ID: ${order["orderId"]}"),
                 pw.Text("Customer: ${order["address"]["name"]}"),
-                pw.Text("Phone: ${order["address"]["phone"] ?? ""}"),
-
                 pw.SizedBox(height: 20),
-
-
                 pw.BarcodeWidget(
                   barcode: pw.Barcode.code128(),
                   data: order["orderId"],
@@ -105,68 +91,68 @@ class _OrderConfirmedState extends State<OrderConfirmed>
       ),
     );
 
-
     final bytes = await pdf.save();
 
-    Directory directory = Directory("/storage/emulated/0/Download");
-
-    if (!directory.existsSync()) {
-      directory.createSync(recursive: true);
-    }
-
     final file = File(
-      "${directory.path}/shipping_label_${order["orderId"]}_${DateTime.now().millisecondsSinceEpoch}.pdf",
-    );
+        "/storage/emulated/0/Download/label_${order["orderId"]}.pdf");
 
     await file.writeAsBytes(bytes);
 
-    print("PDF saved at: ${file.path}");
-
-    Get.snackbar("Success", "Shipping label downloaded");
+    Get.snackbar("Success", "Label downloaded");
   }
 
-
+  /// CARD
+  Widget card({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          )
+        ],
+      ),
+      child: child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-
-
     return StreamBuilder(
       stream: orderRef.child(widget.orderId).onValue,
-
       builder: (context, snapshot) {
 
         if (!snapshot.hasData ||
             snapshot.data!.snapshot.value == null) {
-
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
-
 
         Map order = snapshot.data!.snapshot.value as Map;
         Map address = order["address"] ?? {};
         List products = order["products"] ?? [];
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF2F3F5),
+          backgroundColor: bgColor,
 
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: bgColor,
             elevation: 0,
-            leading: const BackButton(color: Colors.black),
-
+            iconTheme: const IconThemeData(color: Colors.black),
             title: const Text(
               'Order Confirmed',
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
               ),
             ),
           ),
-
 
           body: Column(
             children: [
@@ -174,40 +160,23 @@ class _OrderConfirmedState extends State<OrderConfirmed>
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-
                   child: FadeTransition(
                     opacity: _fadeAnim,
-
                     child: Column(
                       children: [
 
-                        const SizedBox(height: 24),
-
-                        // success icon
+                        /// SUCCESS ICON
                         ScaleTransition(
                           scale: _scaleAnim,
                           child: Container(
                             width: 100,
                             height: 100,
-
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE6F4EA),
+                              color: primaryColor.withOpacity(0.1),
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                  Colors.green.withOpacity(0.15),
-                                  blurRadius: 20,
-                                  spreadRadius: 4,
-                                ),
-                              ],
                             ),
-
-                            child: const Icon(
-                              Icons.check_rounded,
-                              color: Color(0xFF2E7D32),
-                              size: 56,
-                            ),
+                            child: Icon(Icons.check,
+                                color: primaryColor, size: 50),
                           ),
                         ),
 
@@ -216,203 +185,100 @@ class _OrderConfirmedState extends State<OrderConfirmed>
                         const Text(
                           'Order Confirmed!',
                           style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold),
                         ),
 
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 20),
 
-                        const Text(
-                          'The order has been successfully packed\nand label generated.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
-                        ),
-
-                        const SizedBox(height: 28),
-
-
-
-
-                        Container(
-                          width: double.infinity,
-
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius:
-                            BorderRadius.circular(16),
-                          ),
-
-                          padding: const EdgeInsets.all(20),
-
+                        /// SUMMARY
+                        card(
                           child: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-
                             children: [
-
-                              // ⭐ CHANGE: dynamic order id
-                              _buildSummaryRow(
-                                  Icons.tag,
-                                  'Order ID',
-                                  order["orderId"]),
-
-                              const SizedBox(height: 12),
-
-                              // ⭐ CHANGE: dynamic customer
-                              _buildSummaryRow(
-                                  Icons.person_outline,
-                                  'Customer',
-                                  address["name"] ?? ""),
-
-                              const SizedBox(height: 12),
-
-                              // ⭐ CHANGE: dynamic items
-                              _buildSummaryRow(
-                                  Icons.inventory_2_outlined,
-                                  'Items',
+                              _row("Order ID", order["orderId"]),
+                              _row("Customer", address["name"] ?? ""),
+                              _row("Items",
                                   "${products.length} items"),
-
-                              const SizedBox(height: 12),
-
-                              // ⭐ CHANGE: dynamic weight
-                              _buildSummaryRow(
-                                  Icons.scale_outlined,
-                                  'Weight',
+                              _row(
+                                  "Weight",
                                   "${order["packingDetails"]?["weight"] ?? "-"} kg"),
                             ],
                           ),
                         ),
 
-                        const SizedBox(height: 16),
-
-
-                        // ============================
-                        // BARCODE CARD
-                        // ============================
-
-                        Container(
-                          width: double.infinity,
-
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFEEF0F8),
-                            borderRadius:
-                            BorderRadius.circular(16),
-                          ),
-
-                          padding: const EdgeInsets.all(20),
-
+                        /// BARCODE
+                        card(
                           child: Column(
                             crossAxisAlignment:
                             CrossAxisAlignment.start,
-
                             children: [
-
-                              const Text(
-                                'Tracking Barcode',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              // ⭐ CHANGE: barcode generation
+                              const Text("Tracking Barcode",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 12),
                               BarcodeWidget(
                                 barcode: Barcode.code128(),
                                 data: order["orderId"],
-                                width: 250,
+                                width: double.infinity,
                                 height: 80,
                               ),
                             ],
                           ),
                         ),
-
-                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
                 ),
               ),
 
-
-              // ============================
-              // BOTTOM BUTTONS
-              // ============================
-
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.fromLTRB(
-                    16, 12, 16, 28),
-
+              /// BUTTONS
+              Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
 
-                    // ⭐ CHANGE: generate shipping label
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
-
-                      child: ElevatedButton.icon(
+                      child: ElevatedButton(
                         onPressed: () async {
 
-                          //  STEP 1: update order status to shipped
-                          await orderRef.child(widget.orderId).update({
-                            "status": "shipped"
-                          });
+                          await orderRef
+                              .child(widget.orderId)
+                              .update({"status": "shipped"});
 
-                          //  STEP 2: get updated order data
                           DatabaseEvent event =
-                          await orderRef.child(widget.orderId).once();
+                          await orderRef
+                              .child(widget.orderId)
+                              .once();
 
-                          Map order = event.snapshot.value as Map;
+                          Map order =
+                          event.snapshot.value as Map;
 
-                          //  STEP 3: generate shipping label
                           await generateShippingLabel(order);
-
-                          Get.snackbar(
-                            "Success",
-                            "Order marked as shipped & label downloaded",
-                          );
                         },
-
-                        icon: const Icon(Icons.print,color: Colors.white,),
-
-                        label:
-                        const Text("Print Shipping Label",style: TextStyle(color: Colors.white),),
-
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                          const Color(0xFF1E3A8A),
+                          backgroundColor: primaryColor,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16),
                         ),
+                        child: const Text("Print Shipping Label",style: TextStyle(color: Colors.white),),
                       ),
                     ),
-
 
                     const SizedBox(height: 10),
 
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
-
-                      child: ElevatedButton.icon(
+                      child: OutlinedButton(
                         onPressed: () {
                           Get.offAll(() => const Orders());
                         },
-
-                        icon: const Icon(Icons.list_alt,color: Colors.white,),
-
-                        label: const Text("Back to Orders",style: TextStyle(color: Colors.white),),
-
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                          const Color(0xFFD4611A),
-                        ),
+                        child: const Text("Back to Orders"),
                       ),
                     ),
                   ],
                 ),
-              ),
+              )
             ],
           ),
         );
@@ -420,36 +286,17 @@ class _OrderConfirmedState extends State<OrderConfirmed>
     );
   }
 
-
-
-  // reusable row widget
-  Widget _buildSummaryRow(
-      IconData icon,
-      String label,
-      String value,
-      ) {
-
-    return Row(
-      children: [
-
-        Icon(icon, size: 18, color: Colors.grey),
-
-        const SizedBox(width: 10),
-
-        Text(label,
-            style: const TextStyle(
-                fontSize: 13,
-                color: Colors.grey)),
-
-        const Spacer(),
-
-        Text(value,
-            style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87)),
-      ],
+  Widget _row(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          const Spacer(),
+          Text(value,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 }
-

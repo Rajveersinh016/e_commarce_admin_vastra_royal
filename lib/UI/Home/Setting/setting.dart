@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 import '../../../Login/login_screen.dart';
 
@@ -17,7 +16,10 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   bool pushNotifications = true;
   bool maintenanceMode = false;
 
+  final Color primaryColor = const Color(0xFF6C63FF);
+  final Color bgColor = const Color(0xFFF5F6FA);
 
+  /// 🔥 CARD
   Widget buildCard({
     required String title,
     required IconData icon,
@@ -25,16 +27,24 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           Row(
             children: [
-              Icon(icon, color: Colors.blue),
+              Icon(icon, color: primaryColor),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -43,6 +53,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               ),
             ],
           ),
+
           const SizedBox(height: 15),
           child,
         ],
@@ -50,7 +61,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ================= TEXT FIELD =================
+  /// TEXT FIELD
   Widget buildTextField(String label, String hint) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -59,9 +70,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
           labelText: label,
           hintText: hint,
           filled: true,
-          fillColor: const Color(0xfff3f4f6),
+          fillColor: Colors.grey.shade100,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
           ),
         ),
@@ -69,7 +80,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ================= DROPDOWN =================
+  /// DROPDOWN
   Widget buildDropdown(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -85,9 +96,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: const Color(0xfff3f4f6),
+          fillColor: Colors.grey.shade100,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             borderSide: BorderSide.none,
           ),
         ),
@@ -95,40 +106,44 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     );
   }
 
-  // ================= LIST TILE =================
+  /// LIST TILE
   Widget buildListTile(String title, String subtitle) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(title),
       subtitle: subtitle.isNotEmpty ? Text(subtitle) : null,
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: Icon(Icons.arrow_forward_ios,
+          size: 16, color: Colors.grey),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff5f6f8),
+      backgroundColor: bgColor,
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: bgColor,
         elevation: 0,
-        leading: const BackButton(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.black),
         title: const Text(
           "Admin Settings",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.blue.shade100,
+              color: primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
+            child: Text(
               "Vastra Royale Pro",
-              style: TextStyle(fontSize: 12),
+              style: TextStyle(
+                  fontSize: 12, color: primaryColor),
             ),
           )
         ],
@@ -138,7 +153,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-
 
             buildCard(
               title: "Store Profile",
@@ -152,37 +166,28 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
-
-
             buildCard(
               title: "Payments & Taxes",
               icon: Icons.payments,
               child: Column(
                 children: [
-                  buildTextField("Tax ID / GSTIN", "Enter Tax Identification Number"),
-                  buildListTile("Payment Gateways", "Stripe, Razorpay connected"),
-                  buildListTile("Payout Schedule", "Weekly - Every Monday"),
+                  buildTextField("Tax ID / GSTIN", "Enter GSTIN"),
+                  buildListTile("Payment Gateways", "Stripe, Razorpay"),
+                  buildListTile("Payout Schedule", "Weekly"),
                 ],
               ),
             ),
-
-            const SizedBox(height: 20),
-
 
             buildCard(
               title: "Team Management",
               icon: Icons.people,
               child: Column(
                 children: [
-                  buildListTile("Manage Staff Accounts", "8 active members"),
-                  buildListTile("Roles & Permissions", "Define access levels"),
+                  buildListTile("Manage Staff Accounts", "8 members"),
+                  buildListTile("Roles & Permissions", "Manage access"),
                 ],
               ),
             ),
-
-            const SizedBox(height: 20),
-
 
             buildCard(
               title: "App Preferences",
@@ -191,39 +196,28 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 children: [
 
                   SwitchListTile(
+                    activeColor: primaryColor,
                     title: const Text("Push Notifications"),
-                    subtitle: const Text("Receive alerts for new orders and inventory"),
+                    subtitle: const Text("Order & inventory alerts"),
                     value: pushNotifications,
                     onChanged: (v) {
-                      setState(() {
-                        pushNotifications = v;
-                      });
+                      setState(() => pushNotifications = v);
                     },
                   ),
 
-                  const Divider(),
-
                   SwitchListTile(
-                    title: const Text(
-                      "Maintenance Mode",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    subtitle: const Text(
-                      "Disables the storefront for customers.",
-                    ),
+                    activeColor: Colors.red,
+                    title: const Text("Maintenance Mode",
+                        style: TextStyle(color: Colors.red)),
+                    subtitle: const Text("Disable storefront"),
                     value: maintenanceMode,
                     onChanged: (v) {
-                      setState(() {
-                        maintenanceMode = v;
-                      });
+                      setState(() => maintenanceMode = v);
                     },
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 20),
-
 
             buildCard(
               title: "Support & Legal",
@@ -237,14 +231,15 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
 
-
+            /// LOGOUT BUTTON
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 18),
                   backgroundColor: Colors.red,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -256,7 +251,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                 },
                 child: const Text(
                   "Log out",
-                  style: TextStyle(fontSize: 16,color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 16, color: Colors.white),
                 ),
               ),
             ),
@@ -267,14 +263,9 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
               "LAST SAVED: TODAY AT 2:45 PM",
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
-
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
-
-
-
 }
