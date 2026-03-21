@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
+import '../../../Controller/inventory_controller.dart';
 import 'Add_New_Product/add_new_product.dart';
 
 class Inventory extends StatefulWidget {
@@ -75,8 +76,10 @@ class _InventoryState extends State<Inventory> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
-                    image: AssetImage(image),
-                    fit: BoxFit.fill,
+                    image: image.startsWith("http")
+                        ? NetworkImage(image)
+                        : AssetImage(image) as ImageProvider,
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
@@ -140,6 +143,10 @@ class _InventoryState extends State<Inventory> {
       ),
     );
   }
+
+
+  final inventoryController = Get.put(InventoryController());
+
 
   @override
   Widget build(BuildContext context) {
@@ -263,8 +270,10 @@ class _InventoryState extends State<Inventory> {
                   Text("Inventory Overview",
                       style: TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text("128 PRODUCTS",
-                      style: TextStyle(color: Colors.grey)),
+                  Obx(() => Text(
+                    "${inventoryController.products.length} PRODUCTS",
+                    style: TextStyle(color: Colors.grey),
+                  ))
                 ],
               ),
             ),
@@ -272,45 +281,62 @@ class _InventoryState extends State<Inventory> {
             SizedBox(height: 16),
 
 
-            _buildProductCard(
-              image: "lib/assets/images/Man.png",
-              title: "Navy Slim Fit Suit",
-              category: "MENSWEAR • SUITS",
-              status: "ACTIVE",
-              stock: "12 in stock",
-              price: "450.00",
-              statusColor: Colors.blue,
-            ),
+            Obx(() => ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: inventoryController.products.length,
+              itemBuilder: (context, index) {
 
-            _buildProductCard(
-              image: "lib/assets/images/Woman.png",
-              title: "Velvet Evening Gown",
-              category: "WOMENSWEAR • GOWNS",
-              status: "LOW STOCK",
-              stock: "2 in stock",
-              price: "890.00",
-              statusColor: Colors.orange,
-            ),
+                final product = inventoryController.products[index];
 
-            _buildProductCard(
-              image: "lib/assets/images/Royal_suit.png",
-              title: "Charcoal Blazer",
-              category: "MENSWEAR • BLAZERS",
-              status: "OUT OF STOCK",
-              stock: "0 in stock",
-              price: "210.00",
-              statusColor: Colors.red,
-            ),
+                //  DATA MAPPING
+                String title = product['name'] ?? "No Name";
+                String category = product['category'] ?? "Category";
 
-            _buildProductCard(
-              image: "lib/assets/images/Woman.png",
-              title: "Silk Royal Gown",
-              category: "BRIDAL • GOWNS",
-              status: "ACTIVE",
-              stock: "5 in stock",
-              price: "1,250.00",
-              statusColor: Colors.blue,
-            ),
+                int stock = product['totalStock'] ?? 0;
+                double price = (product['price'] ?? 0).toDouble();
+
+                //  STATUS LOGIC
+                String status;
+                Color statusColor;
+
+                if (stock == 0) {
+                  status = "OUT OF STOCK";
+                  statusColor = Colors.red;
+                } else if (stock <= 5) {
+                  status = "LOW STOCK";
+                  statusColor = Colors.orange;
+                } else {
+                  status = "ACTIVE";
+                  statusColor = Colors.blue;
+                }
+
+                //  IMAGE (FIRST IMAGE)
+                String image = "";
+                if (product['images'] != null) {
+                  var imagesMap = product['images'] as Map;
+                  if (imagesMap.isNotEmpty) {
+                    var firstKey = imagesMap.keys.first;
+                    var imageList = imagesMap[firstKey];
+                    if (imageList != null && imageList.isNotEmpty) {
+                      image = imageList[0];
+                    }
+                  }
+                }
+
+                return _buildProductCard(
+                  image: image.isEmpty
+                      ? "lib/assets/images/Man.png"
+                      : image, // fallback
+                  title: title,
+                  category: category,
+                  status: status,
+                  stock: "$stock in stock",
+                  price: "₹${price.toStringAsFixed(0)}",
+                  statusColor: statusColor,
+                );
+              },
+            )),
 
             const SizedBox(height: 30),
 
